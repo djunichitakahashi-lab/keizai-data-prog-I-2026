@@ -1665,7 +1665,7 @@ body {
 <div class="sec-label"><span class="s-num">②</span>出席コード</div>
 <div class="challenge-card">
 <div class="challenge-title">🧾 出席パスワード</div>
-<div class="challenge-body">最終クイズに正解すると「表示」ボタンが有効になります。10秒間だけ表示されます。</div>
+<div class="challenge-body">最終クイズに正解すると「表示」ボタンが有効になります。30秒間だけ表示されます。</div>
 </div>
 <div class="att-block">
 <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
@@ -2125,16 +2125,15 @@ function refreshAttUI() {
   if (!state || !btn) return;
   const pw    = (state.getAttribute('data-pw') || '').trim();
   if (!pw) { state.textContent = '（未設定）'; btn.disabled = true; return; }
-  if (hasAttBeenShown()) {
-    state.textContent = pw; btn.disabled = true; btn.textContent = '表示済み';
-    if (copyBtn) copyBtn.disabled = false;
+  if (!allStepsDone()) {
+    state.textContent = '（全STEPをクリアすると表示できます）';
+    btn.disabled = true; btn.textContent = '表示';
+    if (copyBtn) copyBtn.disabled = true;
     return;
   }
-  if (allStepsDone()) {
-    state.textContent = '（ボタンを押すと表示されます）'; btn.disabled = false;
-  } else {
-    state.textContent = '（全STEPをクリアすると表示できます）'; btn.disabled = true;
-  }
+  state.textContent = '（ボタンを押すと表示されます）';
+  btn.disabled = false; btn.textContent = '表示';
+  if (copyBtn) copyBtn.disabled = true;
 }
 function showAtt() {
   const state   = document.getElementById('att-state');
@@ -2144,9 +2143,14 @@ function showAtt() {
   const pw = (state.getAttribute('data-pw') || '').trim();
   if (!pw || !allStepsDone()) return;
   if (attTimer) clearTimeout(attTimer);
-  markAttShown();
-  state.textContent = pw; btn.disabled = true; btn.textContent = '表示済み';
+  state.textContent = pw;
+  btn.disabled = true; btn.textContent = '表示中…';
   if (copyBtn) copyBtn.disabled = false;
+  attTimer = setTimeout(() => {
+    state.textContent = '（ボタンを押すと表示されます）';
+    btn.disabled = false; btn.textContent = '表示';
+    if (copyBtn) copyBtn.disabled = true;
+  }, 30000);
 }
 function copyAtt() {
   const state   = document.getElementById('att-state');
